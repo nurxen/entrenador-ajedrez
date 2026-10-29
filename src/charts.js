@@ -46,3 +46,19 @@ export function bars(items, { max, fmt = (v) => v } = {}) {
       <span class="bar-track"><span class="bar-fill" style="width:${Math.max(2, (i.value / m) * 100)}%;background:${i.color || 'var(--brass)'}"></span></span>
       <span class="bar-val">${fmt(i.value)}</span></div>`).join('')}</div>`;
 }
+
+// Segundos gastados en cada jugada propia; los errores se pintan con su color
+export function timeChart(moves) {
+  if (!moves?.length) return '';
+  const W = 320, H = 90, max = Math.max(10, ...moves.map((m) => m.spent));
+  const bw = W / moves.length;
+  const bad = { mistake: CLASSES.mistake.color, blunder: CLASSES.blunder.color, miss: CLASSES.miss.color, inaccuracy: CLASSES.inaccuracy.color };
+  return `<svg class="timechart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Tiempo por jugada">
+    ${moves.map((m, i) => { const h = Math.max(1.5, (m.spent / max) * (H - 4)); return `<rect x="${(i * bw + bw * 0.12).toFixed(2)}" y="${(H - h).toFixed(2)}" width="${(bw * 0.76).toFixed(2)}" height="${h.toFixed(2)}" rx="1" fill="${bad[m.cls] || 'var(--muted)'}"><title>${Math.floor(m.ply / 2) + 1}. ${m.san}: ${Math.round(m.spent)} s</title></rect>`; }).join('')}
+  </svg><div class="tc-axis"><span>jugada 1</span><span>máx. ${Math.round(max)} s</span><span>jugada ${Math.floor(moves.at(-1).ply / 2) + 1}</span></div>`;
+}
+
+// Actividad de los últimos días (racha)
+export function activityDots(days) {
+  return `<div class="dots">${days.map((d) => `<span class="dot-day ${d.total ? (d.total >= 8 ? 'l3' : d.total >= 3 ? 'l2' : 'l1') : ''}" title="${d.day}: ${d.total}"></span>`).join('')}</div>`;
+}

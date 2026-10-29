@@ -39,3 +39,13 @@ create policy "borrar mis partidas" on public.games for delete using (auth.uid()
 create or replace view public.my_game_summary with (security_invoker = on) as
 select played_at::date as fecha, white, black, result, my_color, accuracy, opening, time_class
 from public.games order by played_at desc;
+
+-- ───── Versión 2: progreso de entrenamiento (lecciones, repasos, racha) ─────
+create table if not exists public.progress (
+  user_id    uuid primary key references auth.users (id) on delete cascade,
+  data       jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now()
+);
+alter table public.progress enable row level security;
+drop policy if exists "mi progreso" on public.progress;
+create policy "mi progreso" on public.progress for all using (auth.uid() = user_id) with check (auth.uid() = user_id);

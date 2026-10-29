@@ -12,6 +12,17 @@ Analiza gratis tus partidas de Chess.com con Stockfish 19, como el «Informe de 
 - **App instalable** (PWA) con acceso directo, funciona sin conexión. En Android aparece en el menú *Compartir*.
 - **Supabase** opcional para guardar todo en la nube y verlo desde cualquier dispositivo.
 
+### Novedades de la versión 2
+
+- **Aprender**: biblioteca de 33 lecciones en 8 capítulos (táctica, mates, estrategia, finales, tu repertorio, trampas, partidas inmortales y referentes) con ejercicios interactivos y glosario. Todas las posiciones y soluciones están comprobadas con Stockfish (`npm run lecciones`).
+- **Práctica de aperturas**: la app juega las jugadas del rival y tú las tuyas en las líneas del Londres y la Caro-Kann.
+- **Tablero de análisis** (✥ en la revisión): prueba tus propias jugadas y Stockfish te da las 3 mejores líneas.
+- **Uso del reloj**: tiempo por jugada, errores por jugar rápido y con poco tiempo.
+- **Salida de teoría**: en qué jugada abandonas el libro en cada apertura.
+- **Repetición espaciada** de tus errores (vuelven a 1, 3, 7, 16 y 35 días) y **plan de hoy** con racha de días.
+- Lecciones recomendadas según tus errores, en el informe, la revisión y el entrenador.
+- **Notación española** (R D T A C) o inglesa y 4 temas de tablero.
+
 ## Puesta en marcha (15 minutos)
 
 ### 1. Subir a GitHub
@@ -43,6 +54,11 @@ Abre la URL de GitHub Pages en el móvil:
 - **Android (Chrome)**: menú ⋮ → *Añadir a pantalla de inicio* (o *Instalar app*).
 - **iPhone (Safari)**: botón Compartir → *Añadir a pantalla de inicio*.
 
+## Actualizar desde la versión 1
+
+1. Sube los archivos nuevos al repositorio reemplazando los antiguos (la carpeta `.github` no cambia).
+2. En Supabase → SQL Editor ejecuta `supabase/v2-progreso.sql` para guardar también tu progreso de lecciones y repasos.
+
 ## Uso diario
 
 1. En **Ajustes** escribe tu usuario de Chess.com y deja activado *traer y analizar las partidas nuevas*.
@@ -59,6 +75,7 @@ npm install
 npm run dev          # http://localhost:5173 (con --host lo ves desde el móvil en la misma wifi)
 npm run build        # genera dist/
 npm run analizar samples/partida1.pgn serranilloGm 14   # análisis desde la terminal
+npm run lecciones    # valida todas las lecciones con Stockfish
 ```
 
 | Carpeta | Contenido |
@@ -68,7 +85,11 @@ npm run analizar samples/partida1.pgn serranilloGm 14   # análisis desde la ter
 | `src/engine.js` | Stockfish en un Web Worker |
 | `src/store.js` | IndexedDB local + sincronización con Supabase |
 | `src/chesscom.js` | Importación desde la API pública de Chess.com |
-| `supabase/schema.sql` | Tabla y políticas de seguridad |
+| `src/learn/lessons.js` | Contenido de las lecciones (fácil de ampliar) |
+| `src/learn/player.js` | Reproductor de lecciones, partidas comentadas y práctica de aperturas |
+| `src/progress.js` | Progreso, racha y repetición espaciada |
+| `scripts/validate-lessons.mjs` | Comprueba con Stockfish que todas las lecciones son correctas |
+| `supabase/schema.sql` | Tablas y políticas de seguridad |
 
 ### Cómo se clasifican las jugadas
 

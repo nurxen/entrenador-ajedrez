@@ -1,5 +1,5 @@
 // Service worker: la app y el motor funcionan sin conexión una vez abiertos
-const CACHE = 'entrenador-v1';
+const CACHE = 'entrenador-v2';
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(['./', './index.html', './manifest.webmanifest', './engine/stockfish-19-lite-single.js', './engine/stockfish-19-lite-single.wasm'])).then(() => self.skipWaiting()));
 });

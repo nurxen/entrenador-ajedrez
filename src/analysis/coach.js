@@ -14,6 +14,30 @@ export function myResult(analysis, color) {
   if (r === '0-1') return color === 'b' ? 'win' : 'loss';
   return 'unknown';
 }
+// Tiempo gastado en cada jugada propia (necesita los relojes %clk que exporta Chess.com)
+export function clockStats(analysis, color) {
+  const [base, inc = 0] = String(analysis.headers.TimeControl || '').split('+').map(Number);
+  const mine = analysis.moves.filter((m) => m.color === color);
+  if (!base || !mine.some((m) => m.clock != null)) return null;
+  let prev = base;
+  const moves = [];
+  for (const m of mine) {
+    if (m.clock == null) continue;
+    moves.push({ ply: m.ply, san: m.san, cls: m.cls, spent: Math.max(0, prev - m.clock + inc), clock: m.clock });
+    prev = m.clock;
+  }
+  const bad = (x) => ['mistake', 'blunder', 'miss'].includes(x.cls);
+  const think = moves.filter((x) => x.ply > 16);
+  return {
+    base, inc, moves,
+    avg: moves.reduce((a, b) => a + b.spent, 0) / moves.length,
+    rushedErrors: moves.filter((x) => bad(x) && x.spent < 5 && x.ply > 10),
+    lowClockErrors: moves.filter((x) => bad(x) && x.clock < Math.max(30, base * 0.1)),
+    longest: [...think].sort((a, b) => b.spent - a.spent).slice(0, 3),
+    final: moves.at(-1)?.clock ?? null,
+    openingTime: moves.filter((x) => x.ply < 20).reduce((a, b) => a + b.spent, 0),
+  };
+}
 const avg = (a) => (a.length ? a.reduce((x, y) => x + y, 0) / a.length : null);
 const moveAcc = (m) => Math.max(0, Math.min(100, 103.1668 * Math.exp(-0.04354 * (m.winBefore - m.winAfter)) - 2.1669));
 
@@ -30,7 +54,7 @@ export function aggregate(games, username) {
     phaseErrors: { opening: 0, middlegame: 0, endgame: 0 },
     tags: Object.fromEntries(Object.keys(TAGS).map((k) => [k, 0])),
     openings: {}, blownWins: 0, comebacks: 0, oppBlundersMissed: 0, oppBlunders: 0,
-    puzzles: [], ratingTrend: [],
+    puzzles: [], ratingTrend: [], rushed: 0, lowClock: 0, timePerMove: [], bookExit: [], clockGames: 0,
   };
   for (const { g, color } of list) {
     const a = g.analysis;
@@ -62,19 +86,26 @@ export function aggregate(games, username) {
       } else if (m.cls === 'inaccuracy') for (const t of m.tags) if (t === 'opening') s.tags.opening++;
       maxWin = Math.max(maxWin, m.winAfter); minWin = Math.min(minWin, m.winAfter);
     });
+    const ck = clockStats(a, color);
+    if (ck) { s.clockGames++; s.rushed += ck.rushedErrors.length; s.lowClock += ck.lowClockErrors.length; s.timePerMove.push(ck.avg); }
+    const exit = a.moves.find((m) => m.color === color && m.cls !== 'book' && m.cls !== 'forced');
+    if (exit && a.opening) s.bookExit.push(Math.floor(exit.ply / 2) + 1);
     if (maxWin >= 85 && res !== 'win') s.blownWins++;
     if (minWin <= 15 && res !== 'loss') s.comebacks++;
     const op = a.opening?.name ? a.opening.name.split(':')[0] : 'Desconocida';
     const key = `${color}|${op}`;
-    const o = (s.openings[key] ||= { name: op, color, games: 0, win: 0, draw: 0, loss: 0, acc: [] });
+    const o = (s.openings[key] ||= { name: op, color, games: 0, win: 0, draw: 0, loss: 0, acc: [], exit: [] });
     o.games++; o[res] = (o[res] || 0) + 1;
+    if (exit && a.opening) o.exit.push(Math.floor(exit.ply / 2) + 1);
     const oacc = a.moves.filter((m) => m.color === color && m.phase === 'opening').map(moveAcc);
     if (oacc.length) o.acc.push(avg(oacc));
   }
   s.avgAccuracy = avg(list.map((x) => x.g.analysis.accuracy[x.color]).filter((v) => v != null));
   for (const c of ['w', 'b']) s.byColor[c].avgAcc = avg(s.byColor[c].acc);
   s.phaseAcc = Object.fromEntries(Object.entries(s.phase).map(([k, v]) => [k, avg(v)]));
-  s.openingList = Object.values(s.openings).map((o) => ({ ...o, avgAcc: avg(o.acc) })).sort((a, b) => b.games - a.games);
+  s.avgTimePerMove = avg(s.timePerMove);
+  s.avgBookExit = avg(s.bookExit);
+  s.openingList = Object.values(s.openings).map((o) => ({ ...o, avgAcc: avg(o.acc), avgExit: avg(o.exit) })).sort((a, b) => b.games - a.games);
   s.puzzles.reverse();
   s.advice = advice(s);
   return s;
@@ -127,9 +158,20 @@ export function advice(s) {
     text: `En ${s.blownWins} partida(s) llegaste a estar claramente ganando y no ganaste. Con ventaja: cambia piezas, no peones; elimina el contrajuego antes de atacar.`,
     links: [['Convertir ventaja', LICHESS + 'crushing']],
   });
+  if (s.rushed >= 2) out.push({
+    weight: s.rushed * 2.5, area: 'Gestión del tiempo', title: 'Fallas por jugar demasiado rápido',
+    text: `${s.rushed} de tus errores los jugaste en menos de 5 segundos con tiempo de sobra en el reloj. En rápidas tienes tiempo: en cada jugada con capturas o jaques en el aire, invierte 10 segundos en el repaso de jaques, capturas y amenazas.`, links: [],
+  });
   if (s.tags.timeTrouble >= 2) out.push({
     weight: s.tags.timeTrouble * 2, area: 'Gestión del tiempo', title: 'Fallas con poco tiempo',
     text: `${s.tags.timeTrouble} errores llegaron con menos de 1 minuto. En partidas de 10 minutos intenta llegar a la jugada 20 con al menos 5 minutos.`, links: [],
   });
   return out.sort((a, b) => b.weight - a.weight);
 }
+
+// Qué tipo de lección recomendar para cada área del plan
+export const AREA_TAG = {
+  'Táctica defensiva': 'hanging', 'Visión táctica': 'missedTactic', 'Castigar errores': 'missedPunish',
+  'Seguridad del rey': 'allowedMate', Apertura: 'opening', 'Medio juego': 'positional', Final: 'endgame',
+  Estrategia: 'positional', 'Convertir ventaja': 'endgame', 'Gestión del tiempo': 'hanging',
+};

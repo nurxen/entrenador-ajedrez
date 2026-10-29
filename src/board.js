@@ -6,12 +6,13 @@ const FILES = 'abcdefgh';
 const PIECES = `${import.meta.env.BASE_URL}pieces/`;
 
 export function createBoard(el, { onMove } = {}) {
+  let moveHandler = onMove;
   el.classList.add('board');
   el.innerHTML = `<div class="squares"></div><svg class="arrows" viewBox="0 0 8 8"></svg>`;
   const sqEl = el.querySelector('.squares');
   const svg = el.querySelector('.arrows');
   const cells = {};
-  let state = { fen: new Chess().fen(), flipped: false, last: null, badge: null, arrows: [], interactive: false };
+  let state = { fen: new Chess().fen(), flipped: false, last: null, badge: null, arrows: [], marks: [], interactive: false };
   let selected = null;
 
   function build() {
@@ -45,7 +46,7 @@ export function createBoard(el, { onMove } = {}) {
     const board = c.board();
     for (const sq in cells) {
       const d = cells[sq];
-      d.classList.remove('last', 'sel', 'target', 'check');
+      d.classList.remove('last', 'sel', 'target', 'check', 'mark');
       d.querySelector('img')?.remove();
       d.querySelector('.badge')?.remove();
       d.querySelector('.dot')?.remove();
@@ -58,6 +59,7 @@ export function createBoard(el, { onMove } = {}) {
       cells[p.square].appendChild(img);
     }
     if (state.last) for (const s of [state.last.from, state.last.to]) cells[s]?.classList.add('last');
+    for (const s of state.marks || []) cells[s]?.classList.add('mark');
     if (c.inCheck()) {
       for (const row of board) for (const p of row) if (p && p.type === 'k' && p.color === c.turn()) cells[p.square].classList.add('check');
     }
@@ -84,7 +86,7 @@ export function createBoard(el, { onMove } = {}) {
       const legal = c.moves({ square: selected, verbose: true }).find((m) => m.to === sq);
       if (legal) {
         const from = selected; selected = null;
-        onMove?.({ from, to: sq, promotion: legal.promotion ? 'q' : undefined, uci: from + sq + (legal.promotion ? 'q' : '') });
+        moveHandler?.({ from, to: sq, promotion: legal.promotion ? 'q' : undefined, uci: from + sq + (legal.promotion ? 'q' : '') });
         render();
         return;
       }
@@ -102,5 +104,6 @@ export function createBoard(el, { onMove } = {}) {
       render();
     },
     get state() { return state; },
+    onMove(fn) { moveHandler = fn; },
   };
 }

@@ -32,7 +32,7 @@ export const localGames = {
 // ---------- Ajustes ----------
 const SETTINGS_KEY = 'entrenador-ajustes';
 const defaults = {
-  username: '', depth: 14, timeClass: 'rapid', autoImport: true,
+  username: '', depth: 14, timeClass: 'rapid', autoImport: true, notation: 'es', boardTheme: 'madera',
   supabaseUrl: import.meta.env.VITE_SUPABASE_URL || '',
   supabaseKey: import.meta.env.VITE_SUPABASE_ANON_KEY || '',
 };

@@ -8,7 +8,8 @@
     "build": "vite build",
     "preview": "vite preview --host",
     "analizar": "node scripts/analyze-cli.mjs",
-    "aperturas": "node scripts/build-openings.mjs"
+    "aperturas": "node scripts/build-openings.mjs",
+    "lecciones": "node scripts/validate-lessons.mjs"
   },
   "license": "GPL-3.0-or-later",
   "dependencies": {
