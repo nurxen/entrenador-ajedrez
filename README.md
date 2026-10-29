@@ -12,6 +12,11 @@ Analiza gratis tus partidas de Chess.com con Stockfish 19, como el «Informe de 
 - **App instalable** (PWA) con acceso directo, funciona sin conexión. En Android aparece en el menú *Compartir*.
 - **Supabase** opcional para guardar todo en la nube y verlo desde cualquier dispositivo.
 
+### Novedades de la versión 3
+
+- **Nueva estética** de salón de torneo de los años sesenta: papel marfil, nogal, mostaza y verde azulado, con tipografía de época y las jugadas escritas como en una planilla. Las fuentes van incluidas en la app, así que también funciona sin conexión.
+- **Tutorial de bienvenida** la primera vez que se abre: conecta tu usuario de Chess.com y explica cada parte de la app. Se puede repetir desde Ajustes, donde también hay una **Guía de uso** con preguntas frecuentes.
+
 ### Novedades de la versión 2
 
 - **Aprender**: biblioteca de 33 lecciones en 8 capítulos (táctica, mates, estrategia, finales, tu repertorio, trampas, partidas inmortales y referentes) con ejercicios interactivos y glosario. Todas las posiciones y soluciones están comprobadas con Stockfish (`npm run lecciones`).

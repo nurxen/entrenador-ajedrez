@@ -1,3 +1,13 @@
+// Tipografías incluidas en la app (funcionan sin conexión)
+import '@fontsource/bodoni-moda/latin-600.css';
+import '@fontsource/bodoni-moda/latin-700.css';
+import '@fontsource/bodoni-moda/latin-600-italic.css';
+import '@fontsource/bodoni-moda/latin-700-italic.css';
+import '@fontsource/jost/latin-400.css';
+import '@fontsource/jost/latin-500.css';
+import '@fontsource/jost/latin-600.css';
+import '@fontsource/courier-prime/latin-400.css';
+import '@fontsource/courier-prime/latin-700.css';
 import './style.css';
 import { Chess } from 'chess.js';
 import { analyzeGame, CLASSES, CLASS_ORDER, TAGS, countClasses, winPct, lineCp, splitPgns, pvToSan } from './analysis/analyzer.js';
@@ -11,6 +21,7 @@ import { $, esc, fmtDate, pct, badge, toast, san, sanText, evalText } from './ui
 import { progress, logActivity, todayLog, streak, lastDays, srsResult, dueList, pullProgress, exportProgress, importProgress } from './progress.js';
 import { viewLearn } from './learn/player.js';
 import { lessonsForTag } from './learn/lessons.js';
+import { shouldShowTutorial, showTutorial, viewGuide } from './onboarding.js';
 
 const view = $('#view');
 const RES_ES = { win: 'Victoria', loss: 'Derrota', draw: 'Tablas', unknown: '—' };
@@ -123,8 +134,9 @@ const routes = {
   '': viewGames, partidas: viewGames, partida: viewGame, importar: viewImport,
   estadisticas: viewStats, entrenador: viewCoach, ajustes: viewSettings,
   aprender: (...args) => viewLearn(view, args, learnCtx()),
+  guia: () => viewGuide(view),
 };
-const TAB_OF = { partida: 'partidas', importar: 'partidas', '': 'partidas' };
+const TAB_OF = { partida: 'partidas', importar: 'partidas', '': 'partidas', guia: 'ajustes' };
 function route() {
   const [, name = '', ...args] = (location.hash || '#/').split('/');
   const fn = routes[name] || viewGames;
@@ -632,6 +644,9 @@ async function viewSettings() {
       <div class="actions-row"><button class="btn ghost" id="exp">Exportar copia</button><label class="btn ghost">Importar copia<input type="file" id="imp" accept="application/json" hidden></label></div>
       <button class="btn ghost danger small" id="wipe">Borrar partidas de este móvil</button>
     </section>
+    <section class="panel"><h2>Ayuda</h2>
+      <div class="actions-row"><a class="btn" href="#/guia">Guía de uso</a><button class="btn ghost" id="tut">Ver el tutorial</button></div>
+    </section>
     <section class="panel"><h2>Instalar en el móvil</h2>
       <p class="small">Android (Chrome): menú ⋮ → <b>Añadir a pantalla de inicio</b>. iPhone (Safari): botón compartir → <b>Añadir a pantalla de inicio</b>.</p>
       <p class="small">En Android, una vez instalada, aparece en el menú Compartir de Chess.com: comparte el PGN o el enlace de la partida y se analizará sola.</p>
@@ -677,6 +692,7 @@ async function viewSettings() {
     await localGames.clear(); games = []; viewSettings();
   });
   $('#install')?.addEventListener('click', () => deferredInstall?.prompt());
+  $('#tut').addEventListener('click', () => showTutorial({ onFinish: () => { games.forEach(decorate); viewSettings(); } }));
 }
 async function doSync() {
   try {
@@ -723,6 +739,13 @@ async function handleShare() {
   await handleShare();
   if (supabase()) doSync().then(refreshIfList);
   const s = getSettings();
-  if (s.autoImport && s.username) importFromChessCom({ silent: true, analyzeNewest: 3 }).then((f) => f.length && refreshIfList());
+  if (shouldShowTutorial() && !location.search.includes('text=')) {
+    showTutorial({ onFinish: async ({ goImport }) => {
+      games.forEach(decorate);
+      location.hash = '#/';
+      route();
+      if (goImport) { await importFromChessCom({ months: 2, analyzeNewest: 3 }); refreshIfList(); }
+    } });
+  } else if (s.autoImport && s.username) importFromChessCom({ silent: true, analyzeNewest: 3 }).then((f) => f.length && refreshIfList());
   if ('serviceWorker' in navigator && import.meta.env.PROD) navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`);
 })();

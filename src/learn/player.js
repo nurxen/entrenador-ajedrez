@@ -157,7 +157,7 @@ function runPuzzle(board, st, t, ctx, onDone) {
   msg.className = 'pz-box';
   t.appendChild(msg);
   const say = (h) => (msg.innerHTML = h + (done ? '' : `<div class="actions-row"><button class="btn ghost small" data-a="hint">Pista</button><button class="btn ghost small" data-a="sol">Ver solución</button></div>`));
-  say(`<p class="pz-turn"><span class="side ${me}"></span>Juegan ${me === 'w' ? 'blancas' : 'negras'}. Toca una pieza y su destino.</p>`);
+  say(`<p class="pz-turn"><span class="side ${me}"></span>Tu turno: toca una pieza y luego su casilla de destino.</p>`);
   board.set({ interactive: true });
   const finishOk = (text) => {
     done = true; board.set({ interactive: false });
