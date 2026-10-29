@@ -1,0 +1,23 @@
+{
+  "name": "entrenador-ajedrez",
+  "version": "1.0.0",
+  "description": "Analizador gratuito de partidas de ajedrez con Stockfish: precisión, errores y entrenador personal",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host",
+    "build": "vite build",
+    "preview": "vite preview --host",
+    "analizar": "node scripts/analyze-cli.mjs",
+    "aperturas": "node scripts/build-openings.mjs"
+  },
+  "license": "GPL-3.0-or-later",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.118.0",
+    "chess.js": "^1.4.0",
+    "stockfish": "^19.0.1"
+  },
+  "devDependencies": {
+    "vite": "^8.3.5"
+  },
+  "private": true
+}

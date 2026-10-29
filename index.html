@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Entrenador de Ajedrez</title>
+  <meta name="description" content="Analiza gratis tus partidas de Chess.com con Stockfish y descubre en qué fallas.">
+  <meta name="theme-color" content="#13261f">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icons/icon-192.png">
+  <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Entrenador">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="progress" class="progress" hidden></div>
+  <main id="view" class="view"></main>
+  <div id="toast" class="toast" role="status" hidden></div>
+  <nav class="tabbar">
+    <a href="#/" data-tab="partidas"><svg viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h10"/></svg>Partidas</a>
+    <a href="#/estadisticas" data-tab="estadisticas"><svg viewBox="0 0 24 24"><path d="M5 20V11M12 20V4M19 20v-6"/></svg>Estadísticas</a>
+    <a href="#/entrenador" data-tab="entrenador"><svg viewBox="0 0 24 24"><path d="M9 20h6M10 17h4l1-4c2-1 3-3 3-5a6 6 0 0 0-12 0c0 2 1 4 3 5z"/></svg>Entrenador</a>
+    <a href="#/ajustes" data-tab="ajustes"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/></svg>Ajustes</a>
+  </nav>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
